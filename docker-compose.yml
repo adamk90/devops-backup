@@ -1,0 +1,26 @@
+version: "3"
+services:
+  sql-service:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=devops
+      - MYSQL_DATABASE=homeworks
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d
+  php-app:
+    build: ./php-docker
+    image: php:7.2-apache-mysql
+    volumes:
+      - ./php-app/:/var/www/html
+    environment:
+      - DBHOST=sql-service
+    ports:
+      - "8088:80"
+  backup:
+    image: rsnapshot-custom
+    build: ./backup-docker
+    volumes:
+      - ./backup-config/mysql.cnf:/mysql.cnf
+      - ./backup-config/rsnapshot.conf:/etc/rsnapshot.conf
+      - ./backup-volume:/backup-volume
+      - ./php-app/files:/files
